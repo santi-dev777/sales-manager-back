@@ -4,6 +4,7 @@ import userRoutes from "./routes/user.routes.js";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import categoryRoutes from "./routes/category.routes.js";
+import productRoutes from "./routes/product.routes.js";
 
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(cookieParser())
 
 app.use("/auth", userRoutes)
 app.use("/category", categoryRoutes)
+app.use("/product", productRoutes)
 
 const PORT = process.env.PORT ?? 1234
 

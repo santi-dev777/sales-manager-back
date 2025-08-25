@@ -7,7 +7,7 @@ const router = Router();
 router.get("/", auth, CategoryController.getAll);
 router.get("/:id", auth, CategoryController.getById);
 router.post("/", auth, CategoryController.create);
-//router.put("/:id", CategoryController.update);
-//router.delete("/:id", CategoryController.delete);
+router.patch("/:id", auth, CategoryController.update);
+router.delete("/:id", auth, CategoryController.delete);
 
 export default router;

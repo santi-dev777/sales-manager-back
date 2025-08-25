@@ -18,9 +18,8 @@ export class CategoryController {
             if (!category) return res.status(404).json({ error: "Category not found" });
             return res.status(200).json(category);
         } catch (error) {
-            console.log(error)
-            
-            return res.status(500).json({ error: "Internal server error" });
+            if (error.message === "Category not found") return res.status(404).json({ error: "Category not found" });
+            else return res.status(500).json({ error: "Internal server error" });
         }
     }
 
@@ -28,7 +27,7 @@ export class CategoryController {
         try{
             const result = validateCategory(req.body);
             if (!result.success) {
-            return res.status(400).json({ error: result.error.message });
+            return res.status(400).json({ error: JSON.parse(result.error.message) });
         }
 
         const { name, description } = result.data;
@@ -40,5 +39,34 @@ export class CategoryController {
         console.log(error);
         return res.status(500).json({ error: error.message });
     }
-}
+    }
+
+    static async update (req, res){
+        try{
+            const result = validateCategoryUpdate(req.body);
+            if (!result.success) {
+                return res.status(400).json({ error: JSON.parse(result.error.message) });
+            }
+
+        const { name, description } = result.data;
+
+        const updatedCategory = await CategoryModel.update(req.params.id, name, description);
+
+        return res.status(200).json(updatedCategory);
+    } catch ( error ) {
+        console.log(error);
+        return res.status(500).json({ error: error.message });
+    }
+    }
+
+    static async delete (req, res){
+        try{
+            const result = await CategoryModel.delete(req.params.id);
+            if (result) return res.status(204).json();
+        } catch (error) {
+            console.log(error)
+            if (error.message === "Category not found") return res.status(404).json({ error: "Category not found" });
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    }
 }

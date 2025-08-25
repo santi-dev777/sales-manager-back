@@ -15,21 +15,35 @@ export const CategoryModel = {
 
     create: async (name, description) => {
         const id = uuidv4()
-        const [result] = await pool.query("INSERT INTO categories (id, name, description) VALUES (?, ?, ?)", [id, name, description]);
+        const [result] = await pool.query(
+            `INSERT INTO categories (id, name, description) VALUES (?, ?, ?)`,
+            [id, name, description]
+        );
         return await CategoryModel.getById(id);
     },
 
     update: async (id, name, description) => {
         const [result] = await pool.query(
-            "UPDATE categories SET name = IFNULL(?, name), description = IFNULL(?, description) WHERE id = ?",
+            `UPDATE categories 
+            SET name = IFNULL(?, name), 
+                description = IFNULL(?, description) 
+            WHERE id = ?`,
             [name, description, id]
         );
-        if (result.affectedRows === 0) throw new Error("Category not found");
-        return await CategoryModel.getById(id);
+        if (result.affectedRows === 0) {
+            throw new Error("Category not found");
+        }
+        else return await CategoryModel.getById(id);
     },
 
     delete: async (id) => {
-        const [result] = await pool.query("DELETE FROM categories WHERE id = ?", [id]);
-        if (result.affectedRows === 0) throw new Error("Category not found");
+        const [result] = await pool.query(
+            `DELETE FROM categories WHERE id = ?`, 
+            [id]
+        );
+        if (result.affectedRows === 0) {
+            throw new Error("Category not found");
+        }
+        else return true;
     },
 }

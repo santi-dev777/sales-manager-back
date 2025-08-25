@@ -20,7 +20,10 @@ export const CategoryModel = {
     },
 
     update: async (id, name, description) => {
-        const [result] = await pool.query("UPDATE categories SET name = ?, description = ? WHERE id = ?", [name, description, id]);
+        const [result] = await pool.query(
+            "UPDATE categories SET name = IFNULL(?, name), description = IFNULL(?, description) WHERE id = ?",
+            [name, description, id]
+        );
         if (result.affectedRows === 0) throw new Error("Category not found");
         return await CategoryModel.getById(id);
     },

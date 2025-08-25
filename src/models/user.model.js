@@ -27,7 +27,7 @@ export const UserModel = {
     },
 
     update: async (id, name, email) => {
-        const [result] = await pool.query("UPDATE users SET name = ?, email = ? WHERE id = ?", [name, email, id]);
+        const [result] = await pool.query("UPDATE users SET name = IFNULL(?, name), email = IFNULL(?, email) WHERE id = ?", [name, email, id]);
         if (result.affectedRows === 0) throw new Error("User not found");
         return await UserModel.getById(id);
     },

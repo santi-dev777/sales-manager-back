@@ -4,7 +4,9 @@ import { v4 as uuidv4 } from "uuid";
 export const ProductModel = {
     getAll: async (user_id) => {
         const [rows] = await pool.query(
-            'SELECT id, name, description FROM products WHERE user_id = ?',
+            `SELECT p.id, p.name, p.description, p.price, p.stock, c.name AS category_name FROM products p 
+                JOIN categories c ON p.category_id = c.id
+            WHERE p.user_id = ?`,
             [user_id]
         );
         return rows;
@@ -46,7 +48,13 @@ export const ProductModel = {
     },
     update: async (id, name, description, price, stock, category_id) => {
         const [result] = await pool.query(
-            'UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ? WHERE id = ?',
+            `UPDATE products SET 
+                name = IFNULL(?, name), 
+                description = IFNULL(?, description), 
+                price = IFNULL(?, price), 
+                stock = IFNULL(?, stock), 
+                category_id = IFNULL(?, category_id) 
+            WHERE id = ?`,
             [name, description, price, stock, category_id, id]
         );
         if (result.affectedRows === 0) throw new Error("Product not found");
@@ -54,7 +62,7 @@ export const ProductModel = {
     },
     delete: async (id) => {
         const [result] = await pool.query(
-            'DELETE FROM products WHERE id = ?',
+            `DELETE FROM products WHERE id = ?`,
             [id]
         );
         if(result.affectedRows === 0) throw new Error("Product not found");

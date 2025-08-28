@@ -70,14 +70,14 @@ export const SaleModel = {
                 p.description AS product_description,
                 c.name AS category_name
             FROM sales s
-            JOIN sales_details sd ON s.id = sd.sale_id 
-            JOIN products p ON sd.product_id = p.id
-            JOIN categories c ON p.category_id = c.id
+            LEFT JOIN sales_details sd ON s.id = sd.sale_id 
+            LEFT JOIN products p ON sd.product_id = p.id
+            LEFT JOIN categories c ON p.category_id = c.id
             WHERE s.id = ?`,
             [id]
         );
     
-        if (rows.length === 0) throw new Error("Sale not found");
+        if (rows.length === 0) return null;
     
         const sale = {
             id: rows[0].sale_id,
@@ -103,11 +103,10 @@ export const SaleModel = {
     },
     update: async (id, total) => {
         const [result] = await pool.query(`UPDATE sales SET total = ? WHERE id = ?`, [total, id]);
-        if (result.affectedRows === 0) throw new Error("Sale not found");
-        return await SaleModel.getById(id);
+        return result.affectedRows === 0 ? null : await SaleModel.getById(id);
     },
     delete: async (id) => {
         const [result] = await pool.query(`DELETE FROM sales WHERE id = ?`, [id]);
-        if (result.affectedRows === 0) throw new Error("Sale not found");
+        return result.affectedRows === 0 ? null : true;
     },
 }

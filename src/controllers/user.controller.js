@@ -7,7 +7,6 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-
 export class UserController {
     
     static async register (req, res) {
@@ -27,6 +26,7 @@ export class UserController {
         const passwordHash = await bcrypt.hash(password, 10);
 
         const newUser = await UserModel.create(name, email, passwordHash);
+        if (!newUser) return res.status(400).json({ error: "User already exists with this email" });
 
         const token = await createAccessToken({ id: newUser.id });
 
@@ -44,7 +44,7 @@ export class UserController {
         })
     } catch ( error ) {
         console.log(error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: "Internal server error" });
     }
     }
 
@@ -52,7 +52,7 @@ export class UserController {
       try{
         const result = validateLogin(req.body);
         if(!result.success){
-            return res.status(400).json({ error: result.error.message });
+            return res.status(400).json({ error: JSON.parse(result.error.message) });
         }
 
         const { email, password } = result.data;
@@ -87,7 +87,7 @@ export class UserController {
 
       }catch( error ){
         console.log(error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: "Internal server error" });
       }
     }
 

@@ -5,6 +5,7 @@ export class CategoryController {
     static async getAll (req, res) {
         try{
             const categories = await CategoryModel.getAll();
+            if (!categories) return res.status(404).json({ error: "Categories not found" });
             return res.status(200).json(categories);
         } catch (error) {
             console.log(error)
@@ -18,26 +19,27 @@ export class CategoryController {
             if (!category) return res.status(404).json({ error: "Category not found" });
             return res.status(200).json(category);
         } catch (error) {
-            if (error.message === "Category not found") return res.status(404).json({ error: "Category not found" });
-            else return res.status(500).json({ error: "Internal server error" });
+            console.log(error)
+            return res.status(500).json({ error: "Internal server error" });
         }
     }
 
     static async create (req, res) {
         try{
             const result = validateCategory(req.body);
-            if (!result.success) {
-            return res.status(400).json({ error: JSON.parse(result.error.message) });
-        }
+            if (!result.success) return res.status(400).json({ error: JSON.parse(result.error.message) });
 
         const { name, description } = result.data;
 
-        const newCategory = await CategoryModel.create(name, description);
+        const categoryExists = await CategoryModel.getByname(name);
+        if (categoryExists) return res.status(400).json({ error: "Category already exists with this name" });
 
+        const newCategory = await CategoryModel.create(name, description);
+        if (!newCategory) return res.status(400).json({ error: "Category not created" });
         return res.status(201).json(newCategory);
     } catch ( error ) {
         console.log(error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: "Internal server error" });
     }
     }
 
@@ -55,17 +57,17 @@ export class CategoryController {
         return res.status(200).json(updatedCategory);
     } catch ( error ) {
         console.log(error);
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: "Internal server error" });
     }
     }
 
     static async delete (req, res){
         try{
             const result = await CategoryModel.delete(req.params.id);
-            if (result) return res.status(204).json();
+            if (!result) return res.status(404).json({ error: "Category not found" });
+            return res.status(204).json({ message: "Category deleted successfully" });
         } catch (error) {
             console.log(error)
-            if (error.message === "Category not found") return res.status(404).json({ error: "Category not found" });
             return res.status(500).json({ error: "Internal server error" });
         }
     }
